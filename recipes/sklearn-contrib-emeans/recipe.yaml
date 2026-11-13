@@ -1,0 +1,84 @@
+schema_version: 1
+
+context:
+  name: sklearn-contrib-emeans
+  version: "0.2.1"
+
+package:
+  name: ${{ name }}
+  version: ${{ version }}
+
+source:
+  url: https://files.pythonhosted.org/packages/source/${{ name[0] }}/${{ name }}/sklearn_contrib_emeans-${{ version }}.tar.gz
+  sha256: 54e1e47752c61c285fb2affaa32aada5cf7b65bde5f68b824a70790764e92588
+
+build:
+  number: 0
+
+requirements:
+  build:
+    - if: build_platform != target_platform
+      then:
+        - python
+        - cross-python_${{ target_platform }}
+        - meson-python >=0.16
+        - meson >=1.1.0
+        - ninja
+        - cython >=3.1.2
+        - numpy
+        - scipy
+    - ${{ compiler('c') }}
+    - ${{ stdlib('c') }}
+    - if: osx
+      then: llvm-openmp
+    - if: linux
+      then: libgomp
+  host:
+    - python
+    - pip
+    - meson-python >=0.16
+    - meson >=1.1.0
+    - ninja
+    - cython >=3.1.2
+    - numpy
+    # Only for the scipy.linalg.cython_blas .pxd: the BLAS functions are
+    # loaded from the installed SciPy at runtime.
+    - scipy >=1.11.4
+    # See https://github.com/conda-forge/openmp-feedstock/issues/126
+    - if: osx
+      then: llvm-openmp
+    - if: linux
+      then: libgomp
+  run:
+    - python
+    - joblib >=1.4.0
+    - numpy >=1.26.0
+    - scipy >=1.11.4
+    - scikit-learn >=1.6
+    - threadpoolctl >=3.5.0
+
+tests:
+  - python:
+      imports:
+        - sklearn_emeans
+      pip_check: true
+  - requirements:
+      run:
+        - pytest >=7
+    script:
+      - pytest --pyargs sklearn_emeans -q -p no:cacheprovider
+
+about:
+  homepage: https://github.com/cakedev0/sklearn-contrib-emeans
+  repository: https://github.com/cakedev0/sklearn-contrib-emeans
+  summary: E-means clustering (k-means in a few epochs), compatible with scikit-learn.
+  description: |
+    E-means is a mini-batch k-means that converges in a few epochs, with a
+    batch size and step size chosen by scaling laws. EMeans is a
+    scikit-learn compatible estimator, written in Cython with OpenMP.
+  license: BSD-3-Clause
+  license_file: LICENSE
+
+extra:
+  recipe-maintainers:
+    - cakedev0
